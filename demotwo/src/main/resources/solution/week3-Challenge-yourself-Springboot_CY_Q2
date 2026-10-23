@@ -1,0 +1,203 @@
+// AppConfig.java
+package com.examly.springapp.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.examly.springapp.service.LaptopService;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public LaptopService getService(){
+        return new LaptopService();
+    }
+
+}
+
+
+// LaptopController.java
+package com.examly.springapp.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.examly.springapp.model.Laptop;
+import com.examly.springapp.service.LaptopService;
+
+// API end points
+@RestController
+@RequestMapping("/laptop")
+public class LaptopController {
+
+    @Autowired
+    LaptopService laptopService;
+
+    // for API
+    // @postmapping
+    //@getmapping
+    // @putmapping
+    //@deletemapping
+
+    //getall
+    // service data inject 
+
+    @GetMapping("")
+    public ResponseEntity<List<Laptop>> getAllLaptop(){
+
+        // return laptopService.getAllLaptop();
+        try {
+            
+            return ResponseEntity.status(HttpStatus.OK).body(laptopService.getAllLaptop());
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping(" ")
+    public ResponseEntity<Laptop> createLaptop(@RequestBody Laptop laptop){
+
+        try {
+            
+            return ResponseEntity.status(HttpStatus.OK).body(laptopService.createLaptop(laptop));
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        
+    }
+
+    @GetMapping("/{laptopId}")
+    public ResponseEntity<Laptop> getBYId(@PathVariable int laptopId){
+
+        // enhanced foor loop with if condition
+        try {
+            
+            return ResponseEntity.status(HttpStatus.OK).body(laptopService.getBYId(laptopId));
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+}
+
+
+// Laptop.java
+package com.examly.springapp.model;
+
+public class Laptop {
+
+    // POJO class
+    
+
+    int laptopId;
+    String brand;
+    double  price;
+
+    
+
+
+    @Override
+    public String toString() {
+        return "Laptop [laptopId=" + laptopId + ", brand=" + brand + ", price=" + price + "]";
+    }
+
+
+    public Laptop() {
+    }
+
+
+    public Laptop(int laptopId, String brand, double price) {
+        this.laptopId = laptopId;
+        this.brand = brand;
+        this.price = price;
+    }
+    
+
+   public int getLaptopId() {
+    return laptopId;
+   }
+  
+   public void setLaptopId(int laptopId) {
+    this.laptopId = laptopId;
+   }
+   public String getBrand() {
+    return brand;
+   }
+   public void setBrand(String brand) {
+    this.brand = brand;
+   }
+   public double getPrice() {
+    return price;
+   }
+   public void setPrice(double price) {
+    this.price = price;
+   }
+    
+
+}
+
+
+
+//LaptopService.java
+
+package com.examly.springapp.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.examly.springapp.model.Laptop;
+
+// This is my service class
+
+
+public class LaptopService {
+
+
+    // in -memory storage
+
+    List<Laptop> laptops=new ArrayList<>();
+
+    
+    // post
+    public Laptop createLaptop(Laptop laptop){
+        laptops.add(laptop);
+
+        return laptop;
+    }
+
+    // getBYId
+    // Optional
+    public Laptop getBYId(int id){
+
+        // enhanced foor loop with if condition
+        for(Laptop laptop:laptops){
+            if(laptop.getLaptopId()==id){
+                return laptop;
+            }
+        }
+        return null;
+    }
+
+
+    // getall
+    public List<Laptop> getAllLaptop(){
+        return laptops;
+    }
+
+}
+
+
