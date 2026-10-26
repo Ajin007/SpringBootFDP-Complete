@@ -1,0 +1,264 @@
+// product.java
+package com.examly.springapp.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long productId;
+    @Column(unique = true,nullable = false,length = 100)
+    String productName;
+    @Column(nullable = true)
+    String description;
+    @Column(columnDefinition = " DOUBLE default 0.0")
+    double price;
+    @Column(columnDefinition = " INT default 0")
+    Integer stockQuantity;
+
+
+    public Product() {
+    }
+
+    public
+ Product(Long productId, String productName, String description, double price, Integer stockQuantity) {
+        this.productId = productId;
+        this.productName = productName;
+        this.description = description;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+    }
+    
+    public Long getProductId() {
+        return productId;
+  
+ }
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+    public String getProductName() {
+        return productName;
+    }
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    public double getPrice() {
+        return price;
+    }
+    public void setPrice(double price) {
+        this.price = price;
+    }
+    public Integer getStockQuantity() {
+        return stockQuantity;
+    }
+    public void setStockQuantity(Integer stockQuantity) {
+        this.stockQuantity = stockQuantity;
+    }
+
+    
+
+
+}
+
+
+//PrductRepository.java
+package com.examly.springapp.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.examly.springapp.model.Product;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product,Long> {
+
+    
+} 
+
+
+
+// productService.java
+package com.examly.springapp.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.examly.springapp.model.Product;
+import com.examly.springapp.repository.ProductRepository;
+
+@Service
+public class ProductService {
+
+    @Autowired
+    ProductRepository productRepository;
+
+
+    // getALL
+
+    public List<Product> getAll(){
+
+        // select * from Product;
+        return productRepository.findAll();
+    }
+
+    // create 
+    public Product createProduct(Product product){
+
+        // insert into product values (?,?,?,?,?);
+        return productRepository.save(product);
+
+    }
+
+    // getbyid
+    public Product getById(Long id){
+
+        return productRepository.findById(id).orElse(null);
+
+    }
+
+    // update
+    public Product updateProduct(Long id,Product product){
+
+      Product existingProduct=  productRepository.findById(id).orElse(null);
+
+      if(existingProduct != null){
+        existingProduct.setDescription(product.getDescription());
+        existingProduct.setPrice(product.getPrice());
+        existingProduct.setProductName(product.getProductName());
+        existingProduct.setStockQuantity(product.getStockQuantity());
+        return productRepository.save(existingProduct);
+      }
+
+      return null;
+    }
+
+    //delete
+    public void delete(Long id){
+
+        productRepository.deleteById(id);
+    }
+
+
+
+    
+
+
+}
+
+// productController.java
+package com.examly.springapp.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.examly.springapp.model.Product;
+import com.examly.springapp.service.ProductService;
+
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+
+    @Autowired
+    ProductService productService;
+
+    // getALL
+
+    @GetMapping
+    public ResponseEntity<List<Product>> getAll(){
+
+        // select * from Product;
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getAll());
+    }
+
+    // create 
+    @PostMapping
+    public ResponseEntity<Product> createProduct(@RequestBody Product product){
+
+        try {
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(product));
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        // insert into product values (?,?,?,?,?);
+        
+    }
+    
+    // getbyid
+    @GetMapping("/{productId}")
+    public ResponseEntity<Product> getById(@PathVariable Long productId){
+        
+       Product existingproduct= productService.getById(productId);
+          if(existingproduct != null){
+
+              return ResponseEntity.status(HttpStatus.OK).body(existingproduct);
+          }  
+        
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        
+        
+        
+        
+    }
+    
+    // update
+    @PutMapping("/{productId}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Long productId, @RequestBody Product product){
+        try {
+            
+            return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(productId, product));
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        
+    }
+    
+    //delete
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> delete( @PathVariable Long productId){
+        try {
+            productService.delete(productId);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        
+       
+    }
+
+
+
+    
+
+}
