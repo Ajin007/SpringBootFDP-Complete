@@ -1,0 +1,357 @@
+// Event.java
+package com.examly.springapp.model;
+
+import org.springframework.stereotype.Component;
+
+import jakarta.validation.constraints.NotBlank;
+
+@Component
+public class Event {
+
+    int eventId;
+    @NotBlank
+    String eventName;
+    @NotBlank
+    String eventVenue;
+    @NotBlank
+    String eventDate;
+
+
+
+    @Override
+    public String toString() {
+        return "Event [eventId=" + eventId + ", eventName=" + eventName + ", eventVenue=" + eventVenue + ", eventDate="
+                + eventDate + "]";
+    }
+
+    public Event() {
+    }
+
+    public Event(int eventId, @NotBlank String eventName, @NotBlank String eventVenue, @NotBlank String eventDate) {
+      this.eventId = eventId;
+      this.eventName = eventName;
+      this.eventVenue = eventVenue;
+      this.eventDate = eventDate;
+  }
+    
+    public int getEventId() {
+        return eventId;
+  }
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
+    }
+    public String getEventName() {
+        return eventName;
+    }
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+    public String getEventVenue() {
+        return eventVenue;
+    }
+    public void setEventVenue(String eventVenue) {
+        this.eventVenue = eventVenue;
+    }
+    public String getEventDate() {
+        return eventDate;
+    }
+    public void setEventDate(String eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    
+
+
+
+}
+
+
+// Ticket.jav
+package com.examly.springapp.model;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
+public class Ticket {
+
+    int ticketId;
+    int eventId;
+
+    // @Column (nullable = false)--> define a database constraints
+    // @NotBlank validate the String
+    @NotBlank
+    String attendeeName;
+    @NotBlank
+    String ticketType;
+    @Min(1)
+    double ticketPrice;
+
+    public Ticket(int ticketId, int eventId, @NotBlank String attendeeName, @NotBlank String ticketType,
+            @Min(1) double ticketPrice) {
+        this.ticketId = ticketId;
+        this.eventId = eventId;
+        this.attendeeName = attendeeName;
+        this.ticketType = ticketType;
+        this.ticketPrice = ticketPrice;
+    }
+
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ticketId;
+        result = prime * result + eventId;
+        result = prime * result + ((attendeeName == null) ? 0 : attendeeName.hashCode());
+        result = prime * result + ((ticketType == null) ? 0 : ticketType.hashCode());
+        long temp;
+        temp = Double.doubleToLongBits(ticketPrice);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Ticket other = (Ticket) obj;
+        if (ticketId != other.ticketId)
+            return false;
+        if (eventId != other.eventId)
+            return false;
+        if (attendeeName == null) {
+            if (other.attendeeName != null)
+                return false;
+        } else if (!attendeeName.equals(other.attendeeName))
+            return false;
+        if (ticketType == null) {
+            if (other.ticketType != null)
+                return false;
+        } else if (!ticketType.equals(other.ticketType))
+            return false;
+        if (Double.doubleToLongBits(ticketPrice) != Double.doubleToLongBits(other.ticketPrice))
+            return false;
+        return true;
+    }
+
+
+    public int getTicketId() {
+        return ticketId;
+    }
+    public void setTicketId(int ticketId) {
+        this.ticketId = ticketId;
+    }
+    public int getEventId() {
+        return eventId;
+    }
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
+    }
+    public String getAttendeeName() {
+        return attendeeName;
+    }
+    public void setAttendeeName(String attendeeName) {
+        this.attendeeName = attendeeName;
+    }
+    public String getTicketType() {
+        return ticketType;
+    }
+    public void setTicketType(String ticketType) {
+        this.ticketType = ticketType;
+    }
+    public double getTicketPrice() {
+        return ticketPrice;
+    }
+    public void setTicketPrice(double ticketPrice) {
+        this.ticketPrice = ticketPrice;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Ticket [ticketId=" + ticketId + ", eventId=" + eventId + ", attendeeName=" + attendeeName
+                + ", ticketType=" + ticketType + ", ticketPrice=" + ticketPrice + "]";
+    }
+
+
+
+    
+
+}
+
+
+// EventService.java
+package com.examly.springapp.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.examly.springapp.model.Event;
+
+@Service
+public class EventService {
+
+    List<Event> list= new ArrayList<>();
+
+    public Event createEvent(Event event){
+         list.add(event);
+         return event;
+    }
+
+
+    public List<Event> getAllEvent(){
+        return new ArrayList<>(list);
+    }
+
+}
+
+
+// TicketService.java
+package com.examly.springapp.service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.stereotype.Service;
+
+import com.examly.springapp.model.Ticket;
+
+@Service
+public class TicketService {
+
+    Map<Integer,Ticket> tickets=new HashMap<>();
+    AtomicInteger ticketId=new AtomicInteger();
+
+    public Ticket createTicket(Ticket ticket){
+        return tickets.put(ticketId.getAndIncrement(), ticket);
+    }
+
+    // this method id for the updateTicke
+    // PUT ----> update based on the path varaible, if you miss any body data "Ticket", that will be 
+    // replaced by null
+    // the entire body data shifted
+    public Ticket updateTicket(int id,Ticket ticket){
+        if(!tickets.containsKey(id)){
+
+            return null;
+        }
+        ticket.setEventId(id);
+        tickets.put(id, ticket);
+        return ticket;
+
+    }
+
+
+    // this method for the patch operartion
+    //  need to set the data manually
+    public Ticket patchTicket(int id,Ticket ticket){
+
+      Ticket existingTicket=  tickets.get(id);
+
+      if(existingTicket== null){
+        return null;
+      }
+
+      if(ticket.getAttendeeName()!=null){
+        existingTicket.setAttendeeName(ticket.getAttendeeName());
+      }
+
+      if(ticket.getTicketPrice() != 0.0){
+        existingTicket.setTicketPrice(ticket.getTicketPrice());
+      }
+      if(ticket.getTicketType() != null){
+        existingTicket.setTicketType(ticket.getTicketType());
+      }
+
+
+      return existingTicket;
+
+
+    }
+
+
+
+}
+
+
+// EventController.java
+package com.examly.springapp.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.examly.springapp.model.Event;
+import com.examly.springapp.model.Ticket;
+import com.examly.springapp.service.EventService;
+import com.examly.springapp.service.TicketService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/event")
+public class EventController {
+
+    @Autowired
+    EventService eventService;
+
+    @Autowired
+    TicketService ticketService;
+
+
+    @PostMapping
+      public Event createEvent(@Valid @RequestBody Event event){
+       
+         return eventService.createEvent(event);
+    }
+    @PostMapping("/ticket")
+      public Ticket createTicket(@Valid @RequestBody Ticket ticket){
+       System.out.println(ticket);
+         return ticketService.createTicket(ticket);
+    }
+
+
+    @GetMapping
+    public List<Event> getAllEvent(){
+        return eventService.getAllEvent();
+    }
+
+    @PutMapping("/{id}")
+    public Ticket updateTicket(@PathVariable int id,@RequestBody Ticket ticket){
+
+        Ticket ticketUpdate=ticketService.updateTicket(id, ticket);
+        return ticketUpdate;
+    }
+
+    @PatchMapping("/{id}")
+    public Ticket patchUpdate(@PathVariable int id,@RequestBody Ticket ticket){
+        Ticket ticketPatch=ticketService.patchTicket(id,ticket);
+        return ticketPatch;
+    }
+
+}
+
+
+// TicketController.java
+package com.examly.springapp.controller;
+
+public class TicketController {
+
+}
