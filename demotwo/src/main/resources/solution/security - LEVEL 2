@@ -1,0 +1,129 @@
+// SecurityConfig.java
+
+package com.examly.springapp.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+   public  SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception {
+    // we will create afilter chain with the roles
+  
+    http.authorizeHttpRequests(
+        auth -> auth.requestMatchers("api/public/**").permitAll().
+        requestMatchers("api/admin/**").hasRole("ADMIN").
+        requestMatchers("api/user/**").hasAnyRole("USER","ADMIN").
+        anyRequest().authenticated()).httpBasic(Customizer.withDefaults());
+
+    
+
+    return http.build();
+
+    }
+
+
+    @Bean
+   public  UserDetailsService userDetailService(){
+    UserDetails admin = User.builder()
+    .username("admin")
+    .password(passwordEncoder().encode("admin123"))
+    .roles("ADMIN")
+    .build();
+
+    UserDetails user=    User.builder().username("user").password(passwordEncoder().encode("admin123")).roles("USER").build();
+
+    return new InMemoryUserDetailsManager(user,admin);
+
+
+    }
+
+    @Bean 
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+}
+
+
+// General java Object creation flow ******************
+// Operation mult = new Operation() {
+//     @Override
+//     public int op(int a, int b) {
+//         return a * b; // explicit method override
+//     }
+// };
+// int result = mult.op(5, 2); // 10
+
+
+// General lambda flow
+// Operation mult = (int a, int b) -> {
+//     return a * b;
+// };
+// // Or simplified via type inference and single-statement return:
+// Operation multSimple = (a, b) -> a * b;
+
+// int result = mult.op(5, 2); // 10
+
+
+
+// how the interface return the data
+
+// interface Animal {
+//     void sound();
+// }
+
+// class Dog implements Animal {
+//     public void sound() {
+//         System.out.println("Bark");
+//     }
+// }
+
+// public Animal getAnimal() {
+//     return new Dog();
+// }
+
+
+// TestController.java
+
+package com.examly.springapp.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class TestController {
+
+    @GetMapping("/public")
+    public String getMessage(){
+        return "This is a public method";
+    }
+    @GetMapping("/protected")
+    public String getMessageProtected(){
+        return "This is a private authenticated method";
+    }
+    @GetMapping("/admin")
+    public String getadminProtected(){
+        return "This is a admin authenticated method";
+    }
+    @GetMapping("/user")
+    public String getUserProtected(){
+        return "This is a user authenticated method";
+    }
+
+
+}

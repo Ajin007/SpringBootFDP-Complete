@@ -1,0 +1,114 @@
+// POM.xml
+<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		
+		</dependency>
+
+// security configuration class
+
+package com.examly.springapp.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+   public  SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception {
+    // we will create afilter chain
+    // this is an lambda model filter chain using the customizer
+    http.authorizeHttpRequests(
+        auth -> auth.requestMatchers("api/public").permitAll().
+        requestMatchers("api/protected").authenticated().
+        anyRequest().authenticated()
+    ).httpBasic(Customizer.withDefaults());
+    
+    // another way to write the same code above
+    // http.authorizeHttpRequests(
+    //     new Customizer<AuthorizationManagerRequestMatcherRegistry>(){
+
+    //         @Override
+    //         public void customize(AuthorizationManagerRequestMatcherRegistry auth){
+
+    //             auth.requestMatchers("api/public").permitAll().
+    //     requestMatchers("api/protected").authenticated().
+    //     anyRequest().authenticated();
+
+    //         }
+
+
+    //     });
+    
+
+    return http.build();
+
+    }
+
+}
+
+
+// General java Object creation flow ******************
+// Operation mult = new Operation() {
+//     @Override
+//     public int op(int a, int b) {
+//         return a * b; // explicit method override
+//     }
+// };
+// int result = mult.op(5, 2); // 10
+
+
+// General lambda flow
+// Operation mult = (int a, int b) -> {
+//     return a * b;
+// };
+// // Or simplified via type inference and single-statement return:
+// Operation multSimple = (a, b) -> a * b;
+
+// int result = mult.op(5, 2); // 10
+
+
+
+// how the interface return the data
+
+// interface Animal {
+//     void sound();
+// }
+
+// class Dog implements Animal {
+//     public void sound() {
+//         System.out.println("Bark");
+//     }
+// }
+
+// public Animal getAnimal() {
+//     return new Dog();
+// }
+
+
+// TestController.class
+package com.examly.springapp.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class TestController {
+
+    @GetMapping("/public")
+    public String getMessage(){
+        return "This is a public method";
+    }
+    @GetMapping("/protected")
+    public String getMessageProtected(){
+        return "This is a private authenticated method";
+    }
+
+}
